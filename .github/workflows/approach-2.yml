@@ -1,4 +1,4 @@
-name: Deploy Databricks Bundle
+name: Databricks Deploy - Vault AWS IAM
 
 on:
   pull_request:
@@ -25,21 +25,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Authenticate to Vault
-        env:
-          VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
-          VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
+      - name: Authenticate to Vault using AWS IAM
         run: |
-          VAULT_TOKEN=$(vault write -field=token auth/approle/login \
-            role_id="$VAULT_ROLE_ID" \
-            secret_id="$VAULT_SECRET_ID")
-
-          echo "VAULT_TOKEN=$VAULT_TOKEN" >> "$GITHUB_ENV"
+          vault login -method=aws role=databricks-ci-aws
 
       - name: Retrieve Databricks credentials from Vault
         run: |
-          echo "DATABRICKS_CLIENT_ID=$(vault kv get -field=client_id secret/databricks)" >> "$GITHUB_ENV"
-          echo "DATABRICKS_CLIENT_SECRET=$(vault kv get -field=client_secret secret/databricks)" >> "$GITHUB_ENV"
+          echo "DATABRICKS_CLIENT_ID=$(vault kv get -field=DATABRICKS_CLIENT_ID secret/databricks)" >> "$GITHUB_ENV"
+          echo "DATABRICKS_CLIENT_SECRET=$(vault kv get -field=DATABRICKS_CLIENT_SECRET secret/databricks)" >> "$GITHUB_ENV"
 
       - name: Setup Databricks CLI
         uses: databricks/setup-cli@main
@@ -61,21 +54,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Authenticate to Vault
-        env:
-          VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
-          VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
+      - name: Authenticate to Vault using AWS IAM
         run: |
-          VAULT_TOKEN=$(vault write -field=token auth/approle/login \
-            role_id="$VAULT_ROLE_ID" \
-            secret_id="$VAULT_SECRET_ID")
-
-          echo "VAULT_TOKEN=$VAULT_TOKEN" >> "$GITHUB_ENV"
+          vault login -method=aws role=databricks-ci-aws
 
       - name: Retrieve Databricks credentials from Vault
         run: |
-          echo "DATABRICKS_CLIENT_ID=$(vault kv get -field=client_id secret/databricks)" >> "$GITHUB_ENV"
-          echo "DATABRICKS_CLIENT_SECRET=$(vault kv get -field=client_secret secret/databricks)" >> "$GITHUB_ENV"
+          echo "DATABRICKS_CLIENT_ID=$(vault kv get -field=DATABRICKS_CLIENT_ID secret/databricks)" >> "$GITHUB_ENV"
+          echo "DATABRICKS_CLIENT_SECRET=$(vault kv get -field=DATABRICKS_CLIENT_SECRET secret/databricks)" >> "$GITHUB_ENV"
 
       - name: Setup Databricks CLI
         uses: databricks/setup-cli@main
