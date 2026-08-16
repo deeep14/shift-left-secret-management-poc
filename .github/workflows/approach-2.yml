@@ -15,7 +15,7 @@ permissions:
 jobs:
   validate:
     name: Validate Databricks Bundle
-    runs-on: deepak-self-hosted-runner
+    runs-on: deepak-ec2-runner
 
     env:
       VAULT_ADDR: http://127.0.0.1:8200
@@ -44,7 +44,7 @@ jobs:
     name: Deploy Databricks Bundle
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: validate
-    runs-on: deepak-self-hosted-runner
+    runs-on: deepak-ec2-runner
 
     env:
       VAULT_ADDR: http://127.0.0.1:8200

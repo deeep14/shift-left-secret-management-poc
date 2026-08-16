@@ -15,7 +15,7 @@ permissions:
 jobs:
   validate:
     name: Validate Databricks Bundle
-    runs-on: deepak-self-hosted-runner
+    runs-on: deepak-ec2-runner
 
     env:
       DATABRICKS_HOST: https://dbc-1d5bb94d-3a60.cloud.databricks.com
@@ -36,7 +36,7 @@ jobs:
     name: Deploy Databricks Bundle
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: validate
-    runs-on: deepak-self-hosted-runner
+    runs-on: deepak-ec2-runner
 
     env:
       DATABRICKS_HOST: https://dbc-1d5bb94d-3a60.cloud.databricks.com
