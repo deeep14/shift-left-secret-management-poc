@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: deepak-self-hosted-runner
 
     env:
       DATABRICKS_HOST: https://dbc-1d5bb94d-3a60.cloud.databricks.com
