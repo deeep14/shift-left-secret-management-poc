@@ -3,7 +3,7 @@
 resources:
   jobs:
     sample_job:
-      name: sample_job_v3
+      name: sample_job
 
       permissions:
         - service_principal_name: 6f562119-1917-4f67-ab7b-db5c0196b509
