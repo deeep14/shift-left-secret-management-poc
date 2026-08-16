@@ -67,11 +67,11 @@ Vault team role -\> least-privilege secret policy flow.
 
 # 2. Why AWS IAM Authentication?
 
-The earlier Vault AppRole experiment used:
+The earlier approach used
 
 ``` text
-VAULT_ROLE_ID
-VAULT_SECRET_ID
+DATABRICKS_CLIENT_ID
+DATABRICKS_SECRET_ID
 ```
 
 Those values would themselves have to be stored somewhere such as GitHub
@@ -125,13 +125,13 @@ github-vault-poc-runner-role
 AWS account:
 
 ``` text
-881601365147
+<ACCOUNT_ID>
 ```
 
 IAM role ARN:
 
 ``` text
-arn:aws:iam::881601365147:role/github-vault-poc-runner-role
+arn:aws:iam::<ACCOUNT_ID>:role/github-vault-poc-runner-role
 ```
 
 The EC2 identity was verified with:
@@ -143,7 +143,7 @@ aws sts get-caller-identity
 Result:
 
 ``` text
-arn:aws:sts::881601365147:assumed-role/github-vault-poc-runner-role/<instance-id>
+arn:aws:sts::<ACCOUNT_ID>:assumed-role/github-vault-poc-runner-role/<instance-id>
 ```
 
 This confirmed that the EC2 instance was successfully assuming the IAM
@@ -171,7 +171,7 @@ Therefore, the role was given the narrowly scoped permission:
     {
       "Effect": "Allow",
       "Action": "iam:GetRole",
-      "Resource": "arn:aws:iam::881601365147:role/github-vault-poc-runner-role"
+      "Resource": "arn:aws:iam::<ACCOUNT_ID>:role/github-vault-poc-runner-role"
     }
   ]
 }
@@ -349,7 +349,7 @@ databricks-ci-aws
 The role maps the AWS IAM role:
 
 ``` text
-arn:aws:iam::881601365147:role/github-vault-poc-runner-role
+arn:aws:iam::<ACCOUNT_ID>:role/github-vault-poc-runner-role
 ```
 
 to the Vault policy:
@@ -363,7 +363,7 @@ Command:
 ``` bash
 vault write auth/aws/role/databricks-ci-aws \
   auth_type="iam" \
-  bound_iam_principal_arn="arn:aws:iam::881601365147:role/github-vault-poc-runner-role" \
+  bound_iam_principal_arn="arn:aws:iam::<ACCOUNT_ID>:role/github-vault-poc-runner-role" \
   token_policies="databricks-ci"
 ```
 
@@ -436,7 +436,7 @@ This succeeded.
 Vault returned a token with:
 
 ``` text
-token_meta_account_id    881601365147
+token_meta_account_id    <ACCOUNT_ID>
 token_meta_auth_type     iam
 token_policies           ["databricks-ci" "default"]
 ```
@@ -489,13 +489,13 @@ secret/databricks
 
 ------------------------------------------------------------------------
 
-# 14. AppRole vs AWS IAM
+# 14. GitHub Secrets vs AWS IAM
 
 The earlier AppRole experiment used:
 
 ``` text
-VAULT_ROLE_ID
-VAULT_SECRET_ID
+DATABRICKS_CLIENT_ID
+DATABRICKS_SECRET_ID
 ```
 
 The flow was:
@@ -503,13 +503,7 @@ The flow was:
 ``` text
 GitHub Actions
       |
-      | Role ID + Secret ID
-      v
-Vault AppRole
-      |
-      v
-Vault token
-      |
+      | Client ID + Secret ID
       v
 Databricks secret
 ```
@@ -656,65 +650,7 @@ replace deployment approval gates. fileciteturn3file4L205-L214
 
 ------------------------------------------------------------------------
 
-# 18. POC Status
-
-## Completed
-
--   AWS EC2 created
--   EC2 IAM role created
--   `aws sts get-caller-identity` verified
--   Docker installed on Amazon Linux 2023
--   Vault running in Docker
--   Databricks credentials stored in Vault KV
--   `databricks-ci` least-privilege policy created
--   AWS auth method enabled
--   AWS IAM role mapped to Vault role
--   AWS IAM authentication successfully tested
--   Vault token successfully received
--   Databricks secret successfully retrieved using the AWS-authenticated
-    Vault token
-
-## Remaining
-
--   Install/register GitHub Actions runner on this EC2
--   Run GitHub Actions on the AWS runner
--   Authenticate to Vault using AWS IAM from the workflow
--   Retrieve Databricks credentials from Vault
--   Run Databricks Bundle validation/deployment
--   Replace the existing GitHub-Secrets workflow with the Vault-based
-    workflow
--   Test PR validation and `main` deployment end-to-end
-
-------------------------------------------------------------------------
-
-# 19. Important POC Limitation
-
-This POC uses Vault in development mode:
-
-``` text
-Storage: inmem
-```
-
-and:
-
-``` text
-VAULT_DEV_ROOT_TOKEN_ID=dev-only-token
-```
-
-This is intentionally simplified for learning/testing.
-
-A production implementation should use a properly deployed Vault
-environment, secure storage, TLS, appropriate authentication
-configuration, controlled policies, and platform-managed IAM/Vault
-bindings.
-
-The reference design also assumes separate Dev and Prod Vault
-environments and routes dev/qa versus uat/prod accordingly.
-fileciteturn3file8L395-L426
-
-------------------------------------------------------------------------
-
-# 20. Final Result
+# 18. Final Result
 
 The POC demonstrates two credential-management models:
 
@@ -745,5 +681,5 @@ Databricks Secret
 Databricks CLI
 ```
 
-Approach 2 removes the need for Vault AppRole credentials in GitHub and
+Approach 2 removes the need for credentials in GitHub and
 uses the AWS runner's workload identity as the authentication mechanism.

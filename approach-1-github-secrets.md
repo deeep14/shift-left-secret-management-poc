@@ -134,75 +134,6 @@ The actual values must never be committed to the repository.
 
 ------------------------------------------------------------------------
 
-## GitHub Actions Workflow
-
-The workflow was configured to:
-
--   Validate on pull requests targeting `main`
--   Validate and deploy on pushes to `main`
--   Use a self-hosted runner
-
-Example:
-
-``` yaml
-name: Deploy Databricks Bundle
-
-on:
-  pull_request:
-    branches:
-      - main
-
-  push:
-    branches:
-      - main
-
-permissions:
-  contents: read
-
-jobs:
-  validate:
-    name: Validate Databricks Bundle
-    runs-on: deepak-self-hosted-runner
-
-    env:
-      DATABRICKS_HOST: https://<workspace-host>
-      DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
-      DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Databricks CLI
-        uses: databricks/setup-cli@main
-
-      - name: Validate Databricks Bundle
-        run: databricks bundle validate -t dev
-
-  deploy:
-    name: Deploy Databricks Bundle
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: validate
-    runs-on: deepak-self-hosted-runner
-
-    env:
-      DATABRICKS_HOST: https://<workspace-host>
-      DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
-      DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Databricks CLI
-        uses: databricks/setup-cli@main
-
-      - name: Deploy Databricks Bundle
-        run: databricks bundle deploy -t dev
-```
-
-------------------------------------------------------------------------
-
 ## CI/CD Behaviour Verified
 
 ### Direct push to `main`
@@ -246,7 +177,7 @@ A self-hosted runner was configured for the POC.
 The workflow uses:
 
 ``` yaml
-runs-on: deepak-self-hosted-runner
+runs-on: deepak-ec2-runner
 ```
 
 The runner executes the GitHub Actions jobs and provides the machine on
