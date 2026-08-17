@@ -3,7 +3,7 @@
 resources:
   jobs:
     sample_job:
-      name: sample_job
+      name: sample_job_v1
 
       trigger:
         periodic:
