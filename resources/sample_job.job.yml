@@ -5,19 +5,10 @@ resources:
     sample_job:
       name: sample_job
 
-      permissions:
-        - service_principal_name: 6f562119-1917-4f67-ab7b-db5c0196b509
-          level: CAN_MANAGE
-
       trigger:
-        # Run this job every day, exactly one day from the last run; see https://docs.databricks.com/api/workspace/jobs/create#trigger
         periodic:
           interval: 1
           unit: DAYS
-
-      #email_notifications:
-      #  on_failure:
-      #    - your_email@example.com
 
       parameters:
         - name: catalog
