@@ -31,6 +31,33 @@ jobs:
           echo "::add-mask::$OIDC_TOKEN"
           echo "OIDC_TOKEN=$OIDC_TOKEN" >> "$GITHUB_ENV"
 
+      - name: Inspect OIDC Claims
+        run: |
+          python3 - <<'PY'
+          import os
+          import base64
+          import json
+
+          token = os.environ["OIDC_TOKEN"]
+
+          payload = token.split(".")[1]
+          payload += "=" * (-len(payload) % 4)
+
+          claims = json.loads(
+              base64.urlsafe_b64decode(payload)
+          )
+
+          print("OIDC claims:")
+          print("  iss:", claims.get("iss"))
+          print("  aud:", claims.get("aud"))
+          print("  sub:", claims.get("sub"))
+          print("  repository:", claims.get("repository"))
+          print("  repository_owner:", claims.get("repository_owner"))
+          print("  environment:", claims.get("environment"))
+          print("  ref:", claims.get("ref"))
+          print("  event_name:", claims.get("event_name"))
+          PY
+
       - name: Authenticate to Vault
         run: |
           RESPONSE=$(curl -sSL \
