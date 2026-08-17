@@ -10,7 +10,7 @@ permissions:
 jobs:
   test:
     name: Test GitHub OIDC → Vault
-    runs-on: deepak-self-hosted-runner
+    runs-on: deepak-ec2-runner
     environment: dev
 
     env:
