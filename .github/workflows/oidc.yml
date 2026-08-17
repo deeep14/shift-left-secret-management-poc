@@ -10,7 +10,7 @@ permissions:
 jobs:
   test:
     name: Test GitHub OIDC → Vault
-    runs-on: deepak-ec2-runner
+    runs-on: deepak-self-hosted-runner
     environment: dev
 
     env:
@@ -44,19 +44,30 @@ jobs:
 
           VAULT_TOKEN=$(echo "$RESPONSE" | python3 -c '
           import sys, json
+
           data = json.load(sys.stdin)
+
           if "auth" not in data:
               print("Vault authentication failed", file=sys.stderr)
               sys.exit(1)
+
           print(data["auth"]["client_token"])
           ')
 
           echo "::add-mask::$VAULT_TOKEN"
           echo "VAULT_TOKEN=$VAULT_TOKEN" >> "$GITHUB_ENV"
 
-      - name: Read Databricks credentials from Vault
+      - name: Verify Vault secret access
         run: |
-          curl -sSL \
+          RESPONSE=$(curl -sSL \
             --header "X-Vault-Token: $VAULT_TOKEN" \
-            "$VAULT_ADDR/v1/secret/data/databricks" \
-            | python3 -m json.tool
+            "$VAULT_ADDR/v1/secret/data/databricks")
+
+          echo "$RESPONSE" | python3 -c '
+          import sys, json
+
+          data = json.load(sys.stdin)["data"]["data"]
+
+          print("Vault authentication successful")
+          print("Available keys:", list(data.keys()))
+          '
